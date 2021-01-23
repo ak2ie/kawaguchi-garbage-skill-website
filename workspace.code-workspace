@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "hosting"
+		},
+		{
+			"path": "functions"
+		}
+	],
+	"remoteAuthority": "wsl+Ubuntu-20.04"
+}

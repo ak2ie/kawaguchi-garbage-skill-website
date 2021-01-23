@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: "3"
+services:
+  firebase:
+    image: kawaguchi-garbage
+    ports:
+      - 9005:9005 # firebase login
+      - 5000:5000 # firebase login
+      - 8080:8080 # hosting
+    environment:
+      - HOST=0.0.0.0
+    expose:
+      - 5000
+    volumes:
+      - ./:/app
+    tty: true
+    working_dir: /app

@@ -1,0 +1,19 @@
+<template>
+  <v-main>
+    <v-container>
+      <h1>ログイン</h1>
+      <div>
+        <a
+          href="https://www.amazon.com/ap/oa?client_id=amzn1.application-oa2-client.03e4de0c7f4c4ff5898c3bb9f93dfac4&scope=profile&response_type=code&redirect_uri=https://kawaguchi-garbage-skill.web.app/OAuthCallback"
+        >
+          <v-img
+            src="../assets/btnLWA_gold_195x46.png"
+            width="297"
+            height="49"
+            class="mx-auto"
+          />
+        </a>
+      </div>
+    </v-container>
+  </v-main>
+</template>
