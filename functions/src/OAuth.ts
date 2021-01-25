@@ -1,6 +1,7 @@
 import axios from "axios";
 import * as functions from "firebase-functions";
 import * as querystring from "querystring";
+import * as admin from "firebase-admin";
 
 /**
  * Amazon OAuth管理
@@ -64,6 +65,46 @@ export class OAuth {
       );
     } catch (error) {
       throw new Error("ユーザープロフィール取得失敗:" + error);
+    }
+  }
+
+  /**
+   * Firebaseトークンを保存する
+   * @param {string} id ID
+   * @param {string} token Firebaseトークン
+   */
+  public async saveFirebaseToken(id: string, token: string) {
+    try {
+      const db = admin.firestore();
+      const firebaseTokensRef = db.collection("firebaseTokens");
+      await firebaseTokensRef.doc(id).set({
+        token: token,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /**
+   * Firebaseトークンを取得する
+   * @param {string} id ID
+   */
+  public async getFirebaseToken(id: string) {
+    const db = admin.firestore();
+    const firebaseTokenRef = await db
+      .collection("firebaseTokens")
+      .doc(id)
+      .get();
+    if (!firebaseTokenRef.exists) {
+      throw new Error(`Firebaseトークンが存在しません id=${id}`);
+    }
+    const token = firebaseTokenRef.get("token");
+    if (typeof token !== "string") {
+      throw new Error(`Firebaseトークンを取得できませんでした id=${id}`);
+    } else {
+      // データを取得したので削除
+      await db.collection("firebaseTokens").doc(id).delete();
+      return token;
     }
   }
 

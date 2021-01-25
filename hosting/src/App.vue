@@ -4,6 +4,20 @@
   </v-app>
 </template>
 
+<script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
+import { FirebaseHelper } from "@/firebase";
+
+@Component
+export default class App extends Vue {
+  public created() {
+    // ログイン制御を登録
+    const firebaseHelper = new FirebaseHelper();
+    firebaseHelper.onAuth();
+  }
+}
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

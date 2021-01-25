@@ -4,7 +4,7 @@
       <h1>ログイン</h1>
       <div>
         <a
-          href="https://www.amazon.com/ap/oa?client_id=amzn1.application-oa2-client.03e4de0c7f4c4ff5898c3bb9f93dfac4&scope=profile&response_type=code&redirect_uri=https://kawaguchi-garbage-skill.web.app/OAuthCallback"
+          href="https://asia-northeast1-kawaguchi-garbage-skill.cloudfunctions.net/app/auth/login"
         >
           <v-img
             src="../assets/btnLWA_gold_195x46.png"
@@ -17,3 +17,17 @@
     </v-container>
   </v-main>
 </template>
+
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+
+@Component
+export default class Login extends Vue {
+  async mounted() {
+    if (this.$store.getters.isLogined) {
+      // ログイン済ならトップ画面へ遷移
+      this.$router.push({ name: "UserHome" });
+    }
+  }
+}
+</script>
