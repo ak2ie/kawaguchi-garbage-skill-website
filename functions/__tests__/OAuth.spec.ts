@@ -1,11 +1,16 @@
-import { OAuth } from "../src/OAuth";
 import axios from "axios";
 import * as admin from "firebase-admin";
+import { FireStore } from "../src/FireStore";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-admin.initializeApp({});
+jest.mock("../src/FireStore");
+const FireStoreMock = FireStore as jest.Mock;
+
+admin.initializeApp();
+
+import { OAuth } from "../src/OAuth";
 
 describe("ユーザープロフィール", () => {
   it("正常", async () => {
@@ -26,31 +31,90 @@ describe("ユーザープロフィール", () => {
 });
 
 describe("アクセストークン保存", () => {
-  it("正常", () => {
-    // https://itnext.io/firebase-firestore-unit-testing-with-jest-and-kind-of-typescript-e26874196b1e
-    const [collection, doc, set] = firestoreSetHelper({ "token": "dummy_token" });
+  afterEach(() => {
+    // モックを初期化(jest.clearAllMocks()ではモックが消えない)
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+  it("正常", async () => {
+    FireStoreMock.mockImplementation(() => {
+      return {
+        saveFirebaseToken: () => {
+          return new Promise((resolve, _) => {
+            resolve("");
+          });
+        },
+      }
+    });
 
     const oauth = new OAuth();
-    oauth.saveFirebaseToken("dummy_id", "dummy_token");
+    await oauth.saveFirebaseToken("dummy_id", "dummy_token");
+
+  });
+});
+
+describe("アクセストークン取得", () => {
+  afterEach(() => {
+    // モックを初期化(jest.clearAllMocks()ではモックが消えない)
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  xit("正常", async () => {
+    // jest.fnを使う
+    const getData = jest.fn(() => "dummy_token");
+    const get = jest.fn(() => ({
+      exists: true,
+      get: getData
+    }));
+    const deleteFunc = jest.fn();
+    const doc = jest.fn(() => ({ get: get, delete: deleteFunc }));
+    const collection = jest.spyOn(admin.firestore(), "collection").mockReturnValue(({ doc } as unknown) as any);
+
+    const oauth = new OAuth();
+    const token = await oauth.getFirebaseToken("dummy_id");
 
     expect(collection).toHaveBeenCalledWith("firebaseTokens");
-    expect(doc).toHaveBeenCalledWith("dummy_id");
-    expect(set).toHaveBeenCalledWith({ token: "dummy_token" });
+    expect(deleteFunc).toHaveBeenCalledTimes(1);
+    expect(token).toBe("dummy_token");
+  });
+
+  it("取得正常", async () => {
+    FireStoreMock.mockImplementation(() => {
+      return {
+        getFirebaseToken: () => {
+          return new Promise((resolve, _) => {
+            resolve("test");
+          });
+        },
+        deleteFirebaseToken: () => {
+          return new Promise((resolve, _) => {
+            resolve("");
+          });
+        },
+      }
+    });
+
+    const oauth = new OAuth();
+    const token = await oauth.getFirebaseToken("dummy_id");
+
+    expect(token).toBe("test");
   });
 });
 
 
-/**
- * firestoreへの保存(set)確認用モック
- * @param {{ [key: string]: string }} data 保存されるデータ
- * @return タプル（collection, doc, setそれぞれのjest.fn())
- */
-function firestoreSetHelper(data: { [key: string]: string }) {
-  const set = jest.fn();
-  const doc = jest.fn(() => ({ set }));
-  const collection = jest.spyOn(admin.firestore(), 'collection').mockReturnValue(({ doc } as unknown) as any);
-  return [collection, doc, set];
-}
+
+// /**
+//  * firestoreへの保存(set)確認用モック
+//  * @param {{ [key: string]: string }} data 保存されるデータ
+//  * @return タプル（collection, doc, setそれぞれのjest.fn())
+//  */
+// function firestoreSetHelper(data: { [key: string]: string }) {
+//   const set = jest.fn();
+//   const doc = jest.fn(() => ({ set }));
+//   const collection = jest.spyOn(admin.firestore(), 'collection').mockReturnValue(({ doc } as unknown) as any);
+//   return [collection, doc, set];
+// }
 
 // /**
 //  * アクセストークンエンドポイントのモック
