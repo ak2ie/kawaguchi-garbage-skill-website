@@ -12,4 +12,7 @@ typings/
 node_modules/
 
 .env
+# 開発環境サービスアカウント
 kawaguchi-garbage-skill-dev-firebase-adminsdk-kpdlw-904f273d6e.json
+# 環境変数
+.runtimeconfig.json
