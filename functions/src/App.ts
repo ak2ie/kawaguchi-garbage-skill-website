@@ -6,6 +6,7 @@ import { AuthorizationCode } from "simple-oauth2";
 import { OAuth } from "./OAuth";
 import * as crypto from "crypto";
 import * as cookieparser from "cookie-parser";
+import { FireStore } from "./FireStore";
 
 const app = express();
 
@@ -141,6 +142,32 @@ app.post("/auth/firebasetoken", async (request, response) => {
       response.status(200).send({ token: token });
     } else {
       throw new Error("パラメータが異常 query.code=" + code);
+    }
+  } catch (error) {
+    functions.logger.error(error);
+    response.status(500).send();
+  }
+});
+
+/* --------------------------------------------------------
+ *  地域
+ * -------------------------------------------------------- */
+/* ---------- 地域登録 ---------- */
+app.post("/region/regist", async (request, response) => {
+  try {
+    const idToken = request.header("Authorization");
+    if (idToken) {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const userId = decodedToken.uid;
+      const { region } = request.body;
+      if (region === undefined) {
+        throw new Error(`リクエストが異常: region=${region}`);
+      }
+      const firestore = new FireStore();
+      firestore.saveRegion(userId, region);
+      response.status(200).send();
+    } else {
+      throw new Error("未認証");
     }
   } catch (error) {
     functions.logger.error(error);

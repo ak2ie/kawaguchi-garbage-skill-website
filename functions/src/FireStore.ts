@@ -9,13 +9,15 @@ export class FireStore {
    */
   private db = admin.firestore();
 
+  readonly TOKEN_COLLECTION_NAME = "firebaseTokens";
+
   /**
    * Firebaseトークンを保存する
    * @param {string} id ID
    * @param {string} token Firebaseトークン
    */
   public async saveFirebaseToken(id: string, token: string) {
-    await this.db.collection("firebaseTokens").doc(id).set({
+    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc(id).set({
       token: token,
     });
   }
@@ -26,7 +28,10 @@ export class FireStore {
    * @return {string} Firebaseトークン（存在しない場合は空文字）
    */
   public async getFirebaseToken(id: string): Promise<string> {
-    const tokenRef = await this.db.collection("firebaseTokens").doc(id).get();
+    const tokenRef = await this.db
+      .collection(this.TOKEN_COLLECTION_NAME)
+      .doc(id)
+      .get();
     if (!tokenRef.exists) {
       return "";
     }
@@ -42,6 +47,16 @@ export class FireStore {
    * @param {string} id 削除対象ID
    */
   public async deleteFirebaseToken(id: string) {
-    await this.db.collection("firebaseTokens").doc(id).delete();
+    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc(id).delete();
+  }
+
+  /**
+   * 地域を保存する
+   * @param {string} id ID
+   * @param {string} region 地域
+   */
+  public async saveRegion(id: string, region: string) {
+    const user = this.db.collection("users").doc(id);
+    await user.update({ region: region });
   }
 }

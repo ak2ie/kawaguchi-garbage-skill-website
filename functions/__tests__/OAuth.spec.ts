@@ -8,7 +8,9 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 jest.mock("../src/FireStore");
 const FireStoreMock = FireStore as jest.Mock;
 
-admin.initializeApp();
+admin.initializeApp({
+  "projectId": "oauth"
+});
 
 import { OAuth } from "../src/OAuth";
 

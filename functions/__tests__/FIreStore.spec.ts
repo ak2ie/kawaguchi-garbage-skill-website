@@ -8,7 +8,7 @@ import * as admin from "firebase-admin";
 // firebase接続先をエミュレータに設定
 process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
 // 実際にデータを書込/読取りするので時間がかかるため、タイムアウト防止
-jest.setTimeout(30000);
+jest.setTimeout(1000 * 15);
 // firebaseを初期化（IDは何でもよい）
 admin.initializeApp({
   projectId: "test"
@@ -80,6 +80,44 @@ describe("Firebaseトークン削除", () => {
     await firestore.deleteFirebaseToken("dummy_id");
 
     expect((await tokenRef.get()).exists).toBe(false);
+  });
+});
+
+describe("地域登録", () => {
+  afterEach(() => {
+    // モックを初期化(jest.clearAllMocks()ではモックが消えない)
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it("正常(新規登録)", async () => {
+    // ユーザー情報は登録済
+    const db = admin.firestore();
+    const regionRef = db.collection("users").doc("dummy_id");
+    await regionRef.set({ id: "dummy_id" });
+
+    // データ登録
+    const firestore = new FireStore();
+    await firestore.saveRegion("dummy_id", "aoki1");
+
+    // 登録されたことを確認
+    const saved = (await regionRef.get()).get("region")
+    expect(saved).toBe("aoki1");
+  });
+
+  it("正常(更新)", async () => {
+    // 地域は登録済
+    const db = admin.firestore();
+    const regionRef = db.collection("users").doc("dummy_id");
+    await regionRef.set({ id: "dummy_id", region: "aoki1" });
+
+    // データ登録
+    const firestore = new FireStore();
+    await firestore.saveRegion("dummy_id", "aoki2");
+
+    // 登録されたことを確認
+    const saved = (await regionRef.get()).get("region")
+    expect(saved).toBe("aoki2");
   });
 });
 
