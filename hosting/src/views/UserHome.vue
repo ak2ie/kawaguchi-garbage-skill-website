@@ -2,17 +2,17 @@
   <v-main>
     <v-container>
       <h1>ログイン済</h1>
+      <v-btn @click="logout">ログアウト</v-btn>
+      <v-autocomplete
+        v-model="selected"
+        :items="selections"
+        label="お住まいの地域を選択してください"
+      ></v-autocomplete>
+      <v-btn @click="save" :disabled="!canSave">保存</v-btn>
+      <v-snackbar v-model="snackbar">
+        {{ message }}
+      </v-snackbar>
     </v-container>
-    <v-btn @click="logout">ログアウト</v-btn>
-    <v-autocomplete
-      v-model="selected"
-      :items="selections"
-      label="お住まいの地域を選択してください"
-    ></v-autocomplete>
-    <v-btn @click="save" :disabled="!canSave">保存</v-btn>
-    <v-snackbar v-model="snackbar">
-      {{ message }}
-    </v-snackbar>
   </v-main>
 </template>
 

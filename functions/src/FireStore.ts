@@ -17,7 +17,8 @@ export class FireStore {
    * @param {string} token Firebaseトークン
    */
   public async saveFirebaseToken(id: string, token: string) {
-    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc(id).set({
+    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc().set({
+      id: id,
       token: token,
     });
   }
@@ -30,12 +31,15 @@ export class FireStore {
   public async getFirebaseToken(id: string): Promise<string> {
     const tokenRef = await this.db
       .collection(this.TOKEN_COLLECTION_NAME)
-      .doc(id)
+      .where("id", "==", id)
       .get();
-    if (!tokenRef.exists) {
+    if (tokenRef.empty) {
       return "";
     }
-    const token = tokenRef.get("token");
+    let token;
+    tokenRef.forEach((doc) => {
+      token = doc.get("token");
+    });
     if (typeof token !== "string") {
       return "";
     }
@@ -47,7 +51,18 @@ export class FireStore {
    * @param {string} id 削除対象ID
    */
   public async deleteFirebaseToken(id: string) {
-    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc(id).delete();
+    const tokenRef = await this.db
+      .collection(this.TOKEN_COLLECTION_NAME)
+      .where("id", "==", id)
+      .get();
+    if (tokenRef.empty) {
+      return;
+    }
+    tokenRef.forEach(async (doc) => {
+      await doc.data().update({
+        token: admin.firestore.FieldValue.delete(),
+      });
+    });
   }
 
   /**
@@ -58,5 +73,23 @@ export class FireStore {
   public async saveRegion(id: string, region: string) {
     const user = this.db.collection("users").doc(id);
     await user.update({ region: region });
+  }
+
+  /**
+   * 地域を取得する
+   * @param {string} id ID
+   * @return {string} 地域
+   */
+  public async getRegion(id: string): Promise<string> {
+    const user = await this.db.collection("users").doc(id).get();
+    if (!user.exists) {
+      return "";
+    }
+    const region = user.get("region");
+    if (typeof region === "string") {
+      return region;
+    } else {
+      return "";
+    }
   }
 }

@@ -155,6 +155,7 @@ app.post("/auth/firebasetoken", async (request, response) => {
 /* ---------- 地域登録 ---------- */
 app.post("/region/regist", async (request, response) => {
   try {
+    // ログイン済でないと利用不可
     const idToken = request.header("Authorization");
     if (idToken) {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -166,6 +167,26 @@ app.post("/region/regist", async (request, response) => {
       const firestore = new FireStore();
       firestore.saveRegion(userId, region);
       response.status(200).send();
+    } else {
+      throw new Error("未認証");
+    }
+  } catch (error) {
+    functions.logger.error(error);
+    response.status(500).send();
+  }
+});
+
+/* ---------- 地域取得 ---------- */
+app.get("/region/get", async (request, response) => {
+  try {
+    // ログイン済でないと利用不可
+    const idToken = request.header("Authorization");
+    if (idToken) {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const userId = decodedToken.uid;
+      const firestore = new FireStore();
+      const region = await firestore.getRegion(userId);
+      response.status(200).send({ region: region });
     } else {
       throw new Error("未認証");
     }
