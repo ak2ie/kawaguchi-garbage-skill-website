@@ -9,7 +9,7 @@ export class FireStore {
    */
   private db = admin.firestore();
 
-  readonly TOKEN_COLLECTION_NAME = "firebaseTokens";
+  readonly COLLECTION_NAME_USERS = "users";
 
   /**
    * Firebaseトークンを保存する
@@ -17,8 +17,7 @@ export class FireStore {
    * @param {string} token Firebaseトークン
    */
   public async saveFirebaseToken(id: string, token: string) {
-    await this.db.collection(this.TOKEN_COLLECTION_NAME).doc().set({
-      id: id,
+    await this.db.collection(this.COLLECTION_NAME_USERS).doc(id).set({
       token: token,
     });
   }
@@ -30,20 +29,15 @@ export class FireStore {
    */
   public async getFirebaseToken(id: string): Promise<string> {
     const tokenRef = await this.db
-      .collection(this.TOKEN_COLLECTION_NAME)
-      .where("id", "==", id)
+      .collection(this.COLLECTION_NAME_USERS)
+      .doc(id)
       .get();
-    if (tokenRef.empty) {
+    const token = tokenRef.get("token");
+    if (typeof token === "string") {
+      return token;
+    } else {
       return "";
     }
-    let token;
-    tokenRef.forEach((doc) => {
-      token = doc.get("token");
-    });
-    if (typeof token !== "string") {
-      return "";
-    }
-    return token;
   }
 
   /**
@@ -51,18 +45,12 @@ export class FireStore {
    * @param {string} id 削除対象ID
    */
   public async deleteFirebaseToken(id: string) {
-    const tokenRef = await this.db
-      .collection(this.TOKEN_COLLECTION_NAME)
-      .where("id", "==", id)
-      .get();
-    if (tokenRef.empty) {
-      return;
-    }
-    tokenRef.forEach(async (doc) => {
-      await doc.data().update({
+    await this.db.collection(this.COLLECTION_NAME_USERS).doc(id).set(
+      {
         token: admin.firestore.FieldValue.delete(),
-      });
-    });
+      },
+      { merge: true }
+    );
   }
 
   /**
@@ -71,8 +59,12 @@ export class FireStore {
    * @param {string} region 地域
    */
   public async saveRegion(id: string, region: string) {
-    const user = this.db.collection("users").doc(id);
-    await user.update({ region: region });
+    await this.db.collection(this.COLLECTION_NAME_USERS).doc(id).set(
+      {
+        region: region,
+      },
+      { merge: true }
+    );
   }
 
   /**
@@ -81,11 +73,11 @@ export class FireStore {
    * @return {string} 地域
    */
   public async getRegion(id: string): Promise<string> {
-    const user = await this.db.collection("users").doc(id).get();
-    if (!user.exists) {
-      return "";
-    }
-    const region = user.get("region");
+    const userRef = await this.db
+      .collection(this.COLLECTION_NAME_USERS)
+      .doc(id)
+      .get();
+    const region = userRef.get("region");
     if (typeof region === "string") {
       return region;
     } else {

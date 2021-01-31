@@ -1,17 +1,21 @@
 <template>
   <v-main>
     <v-container>
-      <h1>ログイン済</h1>
-      <v-btn @click="logout">ログアウト</v-btn>
-      <v-autocomplete
-        v-model="selected"
-        :items="selections"
-        label="お住まいの地域を選択してください"
-      ></v-autocomplete>
-      <v-btn @click="save" :disabled="!canSave">保存</v-btn>
-      <v-snackbar v-model="snackbar">
-        {{ message }}
-      </v-snackbar>
+      <v-row>
+        <v-col cols="5" offset="3">
+          <h1>ログイン済</h1>
+          <v-btn @click="logout">ログアウト</v-btn>
+          <v-autocomplete
+            v-model="selected"
+            :items="selections"
+            label="お住まいの地域を選択してください"
+          ></v-autocomplete>
+          <v-btn @click="save" :disabled="!canSave">保存</v-btn>
+          <v-snackbar v-model="snackbar">
+            {{ message }}
+          </v-snackbar>
+        </v-col>
+      </v-row>
     </v-container>
   </v-main>
 </template>
@@ -19,6 +23,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { FirebaseHelper } from "@/firebase";
+import axios from "axios";
 
 @Component
 export default class UserHome extends Vue {
@@ -190,10 +195,41 @@ export default class UserHome extends Vue {
   /**
    * 地域保存
    */
-  public save() {
+  public async save() {
     console.log("地域保存");
+    const firebaseHelper = new FirebaseHelper();
+    const idToken = await firebaseHelper.getIdToken();
+    const axiosModule = axios.create({
+      headers: {
+        Authorization: idToken,
+      },
+    });
+    await axiosModule.post(
+      "https://asia-northeast1-kawaguchi-garbage-skill.cloudfunctions.net/app/region/regist",
+      {
+        region: this.selected,
+      }
+    );
     this.message = "保存しました";
     this.snackbar = true;
+  }
+
+  async mounted() {
+    // 保存済の地域を復元
+    const firebaseHelper = new FirebaseHelper();
+    const idToken = await firebaseHelper.getIdToken();
+    const axiosModule = axios.create({
+      headers: {
+        Authorization: idToken,
+      },
+    });
+    const response = await axiosModule.get(
+      "https://asia-northeast1-kawaguchi-garbage-skill.cloudfunctions.net/app/region/get"
+    );
+    const region = response.data.region;
+    if (typeof region === "string") {
+      this.selected = region;
+    }
   }
 
   /**

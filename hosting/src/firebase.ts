@@ -28,4 +28,14 @@ export class FirebaseHelper {
   public async logout() {
     await firebase.auth().signOut();
   }
+
+  /**
+   * ユーザーのIDトークンを取得
+   */
+  public async getIdToken() {
+    const user = firebase.auth().currentUser;
+    if (user !== null) {
+      return await user.getIdToken(/* forceRefresh */ true);
+    }
+  }
 }
