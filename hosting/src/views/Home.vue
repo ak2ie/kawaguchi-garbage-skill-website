@@ -1,7 +1,7 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <p>Alexaスキル「川口のゴミ分別」の地域を登録します。</p>
+    <router-link to="/login">ログイン</router-link>
   </div>
 </template>
 
@@ -11,8 +11,8 @@ import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
 
 @Component({
   components: {
-    HelloWorld
-  }
+    HelloWorld,
+  },
 })
 export default class Home extends Vue {}
 </script>

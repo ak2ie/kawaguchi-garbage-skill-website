@@ -3,14 +3,19 @@
     <v-container>
       <v-row>
         <v-col cols="5" offset="3">
-          <h1>ログイン済</h1>
-          <v-btn @click="logout">ログアウト</v-btn>
+          <h1>地域登録</h1>
           <v-autocomplete
             v-model="selected"
             :items="selections"
             label="お住まいの地域を選択してください"
           ></v-autocomplete>
-          <v-btn @click="save" :disabled="!canSave">保存</v-btn>
+          <v-btn @click="save" :disabled="!canSave" color="primary">保存</v-btn>
+          <p>
+            地域を登録したら、Alexaに話しかけてみてください。<br />
+            <br />
+            「アレクサ、川口のゴミ分別を開いて」<br />
+            「次の可燃ゴミの日を教えて」<br />
+          </p>
           <v-snackbar v-model="snackbar">
             {{ message }}
           </v-snackbar>
@@ -180,17 +185,6 @@ export default class UserHome extends Vue {
    * 通知メッセージ
    */
   message = "";
-
-  /**
-   * ログアウト
-   */
-  public async logout() {
-    if (this.$store.getters.isLogined) {
-      const firebaseHelper = new FirebaseHelper();
-      await firebaseHelper.logout();
-    }
-    this.$router.push({ name: "Home" });
-  }
 
   /**
    * 地域保存
